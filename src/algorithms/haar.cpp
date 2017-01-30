@@ -1,11 +1,11 @@
 #include "haar.h"
 
-namespace haar {
+namespace vrtx {
 
 // Move semantics allow to return local objects
-std::vector<vrtx::vrtx> haarTransformDetection::detect(arma::cube const& trajs) {
+std::vector<Vrtx> HaarTransformDetection::detect(arma::cube const& trajs) {
 
-	std::vector<vrtx::vrtx> vortices;
+	std::vector<Vrtx> vortices;
 	trajs.for_each([&](arma::mat& traj) {
 
 		// Compute energies of detail coefficients
@@ -24,7 +24,7 @@ std::vector<vrtx::vrtx> haarTransformDetection::detect(arma::cube const& trajs) 
 }
 
 // We pass a copy, since we have to copy the values anyway
-arma::mat haarTransformDetection::medianHaarTransform(arma::mat traj) {
+arma::mat HaarTransformDetection::medianHaarTransform(arma::mat traj) {
 
 	assert(mStdDev.size() == std::pow(2, int(std::log2(traj.n_cols)) + 1)); // TODO
 
@@ -66,9 +66,9 @@ arma::mat haarTransformDetection::medianHaarTransform(arma::mat traj) {
 	return energies.rows(0, mMaxScale);
 }
 
-void haarTransformDetection::extractVortices(
+void HaarTransformDetection::extractVortices(
     arma::mat const& energies,
-    std::vector<vrtx::vrtx>& vortices // TODO: Debug option image stuff
+    std::vector<Vrtx>& vortices // TODO: Debug option image stuff
 ) {
 
 	// Step through energies to find regions of sufficient density
@@ -94,9 +94,10 @@ void haarTransformDetection::extractVortices(
 			double const densityThresh = mMaxScale * (r - l);
 			if (arma::accu(energies.submat(0, l + 1, mMaxScale - 1, r - 1)) >= densityThresh) {
 				int k = std::min(r + mGapWidth, energies.n_cols);
-				if (arma::any(1. <= energies.submat(0, l + 1, mMaxScale - 1, k - 1))) {
-					while (
-					// ... search for occurence
+				while (k > r + 1 and arma::any(1. <= energies.submat(0, r + 1, mMaxScale - 1, k - 1))) {
+					k--;
+				}
+				// Occurence found and so forth
 
 
 

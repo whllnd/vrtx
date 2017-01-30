@@ -4,14 +4,20 @@
 
 #include "detectionAlgorithm.h"
 
-namespace haar {
+namespace vrtx {
 
 using energies = arma::rowvec;
 
-class haarTransformDetection : public vrtx::detectionAlgorithm {
+class HaarTransformDetection : public vrtx::DetectionAlgorithm {
 public:
 
-	haarTransform(int sigma, int revolutions, std::vector<double> const& stdDev, int maxScale=5, int gapWidth=15)
+	HaarTransformDetection(
+		int sigma,
+		int revolutions,
+		std::vector<double> const& stdDev,
+		int maxScale=5,
+		int gapWidth=15
+	)
 	: mSigmaFactor(sigma)
 	, mMinRev(revolutions)
 	, mStdDevs(stdDev)
@@ -19,7 +25,7 @@ public:
 	, mGapWidth(gapWidth)
 	{}
 
-	std::vector<vrtx::vrtx> detect(arma::cube const& trajectories);
+	std::vector<vrtx::Vrtx> detect(arma::cube const& trajectories);
 
 private:
 

@@ -6,21 +6,16 @@
 namespace vrtx {
 
 // Data type for storing the location of a detected vortex
-struct vrtx {
-	vrtx(int idx=0, int time=0, int length=0)
-	: particleIdx(idx)
-	, timestamp(time)
-	, len(length)
-	 {}
-	int particleIdx;
-	int timestamp;
+struct Vrtx {
+	int pId;
+	int timeIdx;
 	int len;
 };
 
 // Base class for detection algorithms
-class detectionAlgorithm {
+class DetectionAlgorithm {
 public:
-	virtual std::vector<vrtx> detect(arma::cube trajectories) = 0;
+	virtual std::vector<Vrtx> detect(arma::cube trajectories) = 0;
 };
 
-} // namespace vrtx
+} // namespace Vrtx
