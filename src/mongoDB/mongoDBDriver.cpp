@@ -6,10 +6,10 @@ namespace vrtx {
 arma::mat DBInstance::queryTrajectory(std::string const& type, int pId) {
 
 	auto cursor = mColl.find(document{} << "id" << pId << finalize);
-	auto elem = (*cursor.begin())[type];
+	auto const& elem = (*cursor.begin())[type];
 	arma::mat m(TConf::nDim, TConf::TrajLen);
 	for (std::size_t i(0); i < TConf::TrajLen; i++) {
-		elem.col(i) = arma::colvec{
+		m.col(i) = arma::colvec{
 			elem["x"][i].get_double(),
 			elem["y"][i].get_double(),
 			elem["z"][i].get_double()
