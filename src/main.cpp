@@ -5,12 +5,12 @@
 
 int main() {
 
-	// Connect to database; TODO: probably throws an exception, when no database is running
+	// Connect to database
 	vrtx::db::DBInstance db;
 
 	// Detect vortices
 	vrtx::detection::HaarTransform haar(db, 3, 2);
-	auto vortices = vrtx::detect(haar, trajectories);
+	auto vortices = vrtx::detect(haar);
 
 	// Gather statistics
 	vrtx::statistics::all(vortices);
