@@ -3,29 +3,30 @@
 #include <cmath>
 
 #include "detectionAlgorithm.h"
+#include "mongoDB/mongoDBDriver.h"
 
 namespace vrtx {
+namespace detection {
 
-using energies = arma::rowvec;
-
-class HaarTransformDetection : public vrtx::DetectionAlgorithm {
+class HaarTransform {
 public:
 
-	HaarTransformDetection(
+	HaarTransform(
+		DBInstance const& db,
 		int sigma,
 		int revolutions,
-		std::vector<double> const& stdDev, // TODO: compute at runtime
 		int maxScale=5,
 		int gapWidth=15
 	)
-	: mSigmaFactor(sigma)
+	: mDB(db)
+	, mSigmaFactor(sigma)
 	, mMinRev(revolutions)
 	, mStdDevs(stdDev)
 	, mMaxScale((0 == maxScale) ? mStdDev.size() : maxScale)
 	, mGapWidth(gapWidth)
 	{}
 
-	std::vector<vrtx::Vrtx> detect(arma::cube const& trajectories);
+	std::vector<Vrtx> detect(arma::cube const& trajectories);
 
 private:
 
@@ -33,6 +34,7 @@ private:
 	arma::mat medianHaarTransform(arma::mat trajectory);
 	void extractVortices(arma::mat const& energies, std::vector<vrtx::vrtx>& vortices);
 
+	DBInstance const& mDB;
 	int mSigmaFactor;
 	int mMinRev;
 	int mMaxScale;
@@ -42,4 +44,5 @@ private:
 	double static constexpr mSqrt2 = std::sqrt(2.);
 };
 
+} // namespace detection
 } // namespace haar

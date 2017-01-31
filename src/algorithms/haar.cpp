@@ -1,9 +1,10 @@
 #include "haar.h"
 
 namespace vrtx {
+namespace detection {
 
 // Move semantics allow to return local objects
-std::vector<Vrtx> HaarTransformDetection::detect(arma::cube const& trajs) {
+std::vector<Vrtx> HaarTransform::detect(arma::cube const& trajs) {
 
 	std::vector<Vrtx> vortices;
 	trajs.for_each([&](arma::mat& traj) {
@@ -24,7 +25,7 @@ std::vector<Vrtx> HaarTransformDetection::detect(arma::cube const& trajs) {
 }
 
 // We pass a copy, since we have to copy the values anyway
-arma::mat HaarTransformDetection::medianHaarTransform(arma::mat traj) {
+arma::mat HaarTransform::medianHaarTransform(arma::mat traj) {
 
 	assert(mStdDev.size() == std::pow(2, int(std::log2(traj.n_cols)) + 1)); // TODO
 
@@ -66,7 +67,7 @@ arma::mat HaarTransformDetection::medianHaarTransform(arma::mat traj) {
 	return energies.rows(0, mMaxScale);
 }
 
-void HaarTransformDetection::extractVortices(
+void HaarTransform::extractVortices(
     arma::mat const& energies,
     std::vector<Vrtx>& vortices // TODO: Debug option image stuff
 ) {
@@ -102,7 +103,7 @@ void HaarTransformDetection::extractVortices(
 
 
 
-
+} // namespace detection
 } // namespace haar
 
 
