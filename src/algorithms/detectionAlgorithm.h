@@ -14,14 +14,14 @@ struct Vrtx {
 
 // Templated base function; eventually to be preferred
 template<typename DetectionAlgorithm>
-std::vector<Vrtx> detect(DetectionAlgorithm alg, arma::cube trajectories) {
+std::vector<Vrtx> detect(DetectionAlgorithm alg) {
 	return alg.detect(trajectories);
 }
 
 // Base class for detection algorithms
-class DetectionAlgorithm {
-public:
-	virtual std::vector<Vrtx> detect(arma::cube trajectories) = 0;
-};
+//class DetectionAlgorithm {
+//public:
+//	virtual std::vector<Vrtx> detect(arma::cube trajectories) = 0;
+//};
 
 } // namespace Vrtx
