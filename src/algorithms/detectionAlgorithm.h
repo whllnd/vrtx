@@ -12,6 +12,12 @@ struct Vrtx {
 	int len;
 };
 
+// Templated base function; eventually to be preferred
+template<typename DetectionAlgorithm>
+std::vector<Vrtx> detect(DetectionAlgorithm alg, arma::cube trajectories) {
+	return alg.detect(trajectories);
+}
+
 // Base class for detection algorithms
 class DetectionAlgorithm {
 public:

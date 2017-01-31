@@ -1,6 +1,7 @@
 #include "mongoDBDriver.h"
 
 namespace vrtx {
+namespace db {
 
 // Will probably throw something in case of some error
 arma::mat DBInstance::queryTrajectory(std::string const& type, int pId) {
@@ -20,10 +21,11 @@ arma::mat DBInstance::queryTrajectory(std::string const& type, int pId) {
 
 arma::cube DBInstance::queryTrajectories(std::string const& type, std::vector<int> const& pIds) {
 	arma::cube result(pIds.size(), TConf::nDim, TConf::TrajLen);
-	for (std::size_t i = 0; i < pIds.size(); i++) {
+	for (std::size_t i(0); i < pIds.size(); i++) {
 		result.slice(i) = queryTrajectory(type, pIds[i]);
 	}
 	return cube;
 }
 
+} // namespace db
 } // namespace vrtx

@@ -14,7 +14,7 @@ public:
 	HaarTransformDetection(
 		int sigma,
 		int revolutions,
-		std::vector<double> const& stdDev,
+		std::vector<double> const& stdDev, // TODO: compute at runtime
 		int maxScale=5,
 		int gapWidth=15
 	)
