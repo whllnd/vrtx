@@ -6,6 +6,9 @@ namespace detection {
 // Move semantics allow to return local objects
 std::vector<Vrtx> HaarTransform::detect(arma::cube const& trajs) {
 
+	// TODO: Compute standard deviations and maybe (!!) store intermediate energies in tmp file
+	std::vector<
+
 	std::vector<Vrtx> vortices;
 	trajs.for_each([&](arma::mat& traj) {
 
@@ -13,7 +16,7 @@ std::vector<Vrtx> HaarTransform::detect(arma::cube const& trajs) {
 		auto energy = medianHaarTransform(traj);
 
 		// Normalize energies by factorised standard deviations
-		for (size_t i = 0; i < mStdDev.size(); i++) {
+		for (std::size_t i(0); i < mStdDev.size(); i++) {
 			energy[i] /= mStdDev[i];
 		}
 
@@ -42,7 +45,7 @@ arma::mat HaarTransform::medianHaarTransform(arma::mat traj) {
 	// Compute coefficients
 	int scaleLen = traj.n_cols / 2;
 	arma::mat energies(mStdDev.size(), traj.n_cols);
-	for (int i = 0; i < mStdDev.size(); i++) { // For each scale
+	for (std::size_t i(0); i < mStdDev.size(); i++) { // For each scale
 		int until = traj.n_cols / 2;
 		arma::mat d = (traj(dim, even.cols(0, until)) - traj(dim, odd.cols(0, until))) / mSqrt2;
 		arma::mat a = (traj(dim, even.cols(0, until)) + traj(dim, odd.cols(0, until))) / mSqrt2;
@@ -55,7 +58,7 @@ arma::mat HaarTransform::medianHaarTransform(arma::mat traj) {
 			energies.row(i) = median;
 		} else {
 			arma::rowvec padded(scaleLen), sub(std::pow(2, 1));
-			for (int k = 0; k < d.n_cols; k++) {
+			for (std::size_t k(0); k < d.n_cols; k++) {
 				sub.fill(median(k));
 				padded.subvec(k * sub.n_cols, arma::size(sub)) = sub;
 			}

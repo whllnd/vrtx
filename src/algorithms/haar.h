@@ -21,7 +21,6 @@ public:
 	: mDB(db)
 	, mSigmaFactor(sigma)
 	, mMinRev(revolutions)
-	, mStdDevs(stdDev)
 	, mMaxScale((0 == maxScale) ? mStdDev.size() : maxScale)
 	, mGapWidth(gapWidth)
 	{}
@@ -39,7 +38,6 @@ private:
 	int mMinRev;
 	int mMaxScale;
 	int mGapWidth;
-	std::vector<double> mStdDev; // Defines number of scales effectively
 
 	double static constexpr mSqrt2 = std::sqrt(2.);
 };

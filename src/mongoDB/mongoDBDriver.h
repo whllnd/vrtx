@@ -18,7 +18,7 @@ namespace Type {
 	auto constexpr LatAcc   = "ap";
 }
 
-namespace Conf { // TODO: Somewhere else
+namespace Conf { // TODO: Somewhere else, maybe in db
 	std::size_t constexpr TrajLen = 3125;
 	std::size_t constexpr nDim    = 3;
 }
@@ -32,7 +32,7 @@ using bsoncxx::builder::stream::finalize;
 class DBInstance {
 public:
 
-	DBInstance(std::string const& dbName="local", std::string const& collName="vortices")
+	DBInstance(std::string const& dbName="local", std::string const& collName="NVFOU512N3")
 	: mDBName(dbName)
 	, mCollName(collName)
 	{
