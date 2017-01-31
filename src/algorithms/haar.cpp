@@ -4,10 +4,15 @@ namespace vrtx {
 namespace detection {
 
 // Move semantics allow to return local objects
-std::vector<Vrtx> HaarTransform::detect(arma::cube const& trajs) {
+std::vector<Vrtx> HaarTransform::detect() {
+
+	// Determine number of dimensions and timesteps
 
 	// TODO: Compute standard deviations and maybe (!!) store intermediate energies in tmp file
-	std::vector<
+	std::vector<double> stdDev;
+	for (std::size_t i(0); i < nTimesteps; i++) {
+		// ...
+	}
 
 	std::vector<Vrtx> vortices;
 	trajs.for_each([&](arma::mat& traj) {

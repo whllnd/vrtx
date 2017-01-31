@@ -8,7 +8,7 @@
 namespace vrtx {
 namespace detection {
 
-class HaarTransform {
+class HaarTransform : public DetectionAlgorithm {
 public:
 
 	HaarTransform(
@@ -18,14 +18,14 @@ public:
 		int maxScale=5,
 		int gapWidth=15
 	)
-	: mDB(db)
+	: DetectionAlgorithm(db)
 	, mSigmaFactor(sigma)
 	, mMinRev(revolutions)
 	, mMaxScale((0 == maxScale) ? mStdDev.size() : maxScale)
 	, mGapWidth(gapWidth)
 	{}
 
-	std::vector<Vrtx> detect(arma::cube const& trajectories);
+	std::vector<Vrtx> detect();
 
 private:
 
@@ -33,11 +33,13 @@ private:
 	arma::mat medianHaarTransform(arma::mat trajectory);
 	void extractVortices(arma::mat const& energies, std::vector<vrtx::vrtx>& vortices);
 
-	DBInstance const& mDB;
 	int mSigmaFactor;
 	int mMinRev;
 	int mMaxScale;
 	int mGapWidth;
+
+	int mTimesteps;
+	int mDim;
 
 	double static constexpr mSqrt2 = std::sqrt(2.);
 };
