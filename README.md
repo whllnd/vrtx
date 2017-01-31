@@ -1,6 +1,4 @@
-# vrtx
-
-## c++11 framework to employ different vortex detection algorithms
+## vrtx - c++11 framework to employ different vortex detection algorithms
 
 ## Installation
 
