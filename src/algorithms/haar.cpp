@@ -1,5 +1,6 @@
 #include "haar.h"
 
+// TODO: postprocess()
 namespace vrtx {
 namespace detection {
 
@@ -25,8 +26,8 @@ std::vector<Vrtx> HaarTransform::detect() {
 			energy[i] /= mStdDev[i];
 		}
 
-		// Try to extract actual vortices
-		extractVortices(energy, vortices);
+		// Try to extract vortex candidates
+		extractVortices(traj, energy, vortices, pId);
 	}
 
 	return vortices;
@@ -75,9 +76,11 @@ arma::mat HaarTransform::medianHaarTransform(arma::mat traj) {
 	return energies.rows(0, mMaxScale);
 }
 
-void HaarTransform::extractVortices(
+std::vector<Vrtx> HaarTransform::extractVortices(
+    arma::mat const& traj,
     arma::mat const& energies,
-    std::vector<Vrtx>& vortices // TODO: Debug option image stuff
+	std::vector<Vrtx>& vortices,
+    int const pId
 ) {
 
 	// Step through energies to find regions of sufficient density
@@ -100,16 +103,68 @@ void HaarTransform::extractVortices(
 
 			// Try to extend borders to the right (since we're coming from the left),
 			// if area sum exceeds threshold defined as the area between the borders and max scale
-			double const densityThresh = mMaxScale * (r - l);
-			if (arma::accu(energies.submat(0, l + 1, mMaxScale - 1, r - 1)) >= densityThresh) {
-				int k = std::min(r + mGapWidth, energies.n_cols);
-				while (k > r + 1 and arma::any(1. <= energies.submat(0, r + 1, mMaxScale - 1, k - 1))) {
-					k--;
+			double densityThresh = mMaxScale * (r - l);
+			double areaSum = arma::accu(energies.submat(0, l+1, mMaxScale-1, r-1));
+			if (areaSum >= densityThresh) { // Basically, we found a vortex candidate
+				int wr = std::min(energies.n_cols, r + mGapWidth);
+				int mr = std::min(energies.n_cols, r + 1);
+				arma::uvec idx = arma::find(energies.submat(0, mr, mMaxScale-1, wr) >= 1.);
+				if (0 < idx.n_rows) {
+
+					// Some very unintuitive steps right here
+					idx = arma::flipud(arma::unique(idx / mMaxScale));
+					for (std::size_t k(0); k < idx.n_rows; k++) {
+						densityThresh = mMaxScale * ((mr + idx[k]) - l);
+						areaSum = arma::accu(energies.submat(0, l, mMaxScale-1, mr+idx[k]));
+						if (areaSum >= densityThresh) {
+							r = mr + idx[k];
+							break;
+						}
+					}
 				}
-				// Occurence found and so forth
 
+				// Add vortex to list
+				vortices.push_back(Vrtx{pId, l, r-l, nZeroCrossings(traj.submat(0, l, mDim-1, r))});
+			}
 
+			i = r;
+		} else {
+			i++;
+		}
+	}
 
+	return candidates;
+}
+
+int HaarTransform::nZeroCrossings(arma::mat const& vortex) {
+
+	// Pick axis of largest variance
+	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
+
+	// Smooth trajectory to get rid of ripples; TODO: Check plausibility
+	smoothAxis(axis);
+
+	// Normalize axis into [-1,1]
+	axis /= arma::abs(axis).max();
+	for (std::size_t i(0); i < axis.n_cols; i++) {
+		if (-.25 > axis[i]) {
+			axis[i] = -1.;
+		} else if (.25 > axis[i]) {
+			axis[i] = 0.;
+		} else {
+			axis[i] = 1.;
+		}
+	}
+
+	int cross = 0;
+	for (std::size_t i(0); i < axis.n_cols - 1; i++) {
+		if (axis[i] != axis[i+1]) {
+			cross++;
+		}
+	}
+
+	return cross;
+}
 
 } // namespace detection
 } // namespace haar

@@ -31,7 +31,13 @@ private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
 	arma::mat medianHaarTransform(arma::mat trajectory);
-	void extractVortices(arma::mat const& energies, std::vector<vrtx::vrtx>& vortices);
+	std::vector<Vrtx> extractVortexCandidates(
+		arma::mat const& traj,
+		arma::mat const& energies,
+		std::vector<Vrtx>& vortices,
+		int const pId
+	);
+	int nZeroCrossings(arma::mat const& vortex);
 
 	int mSigmaFactor;
 	int mMinRev;

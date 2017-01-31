@@ -12,6 +12,7 @@ struct Vrtx {
 	int pId;
 	int timeIdx;
 	int len;
+	int rev;
 };
 
 // Templated base function; eventually to be preferred
