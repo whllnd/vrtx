@@ -24,13 +24,10 @@ struct Vrtx {
 // Base class for detection algorithms
 class DetectionAlgorithm {
 public:
-
 	DetectionAlgorithm(DBInstance const& db) : mDb(db) {}
-
 	virtual std::vector<Vrtx> detect() = 0;
 
 private:
-
 	DBInstance const& mDb;
 };
 
