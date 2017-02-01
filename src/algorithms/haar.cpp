@@ -89,17 +89,10 @@ std::vector<Vrtx> HaarTransform::extractVortices(
 
 		if (arma::any(1. <= energies.col(i))) {
 
-			// Find left border; TODO: Maybe this can be omitted
-			int l = i - 1;
-			while (0 < l and 1. <= arma::any(energies.col(l))) {
-				l--;
-			}
-
-			// Find right border
-			int r = i + 1;
-			while (energies.n_cols > r and 1. <= arma::any(energies.col(r))) {
-				r++;
-			}
+			// Find left and right border; TODO: Maybe left can be omitted
+			int l = i, r = i;
+			while (0 < --l and 1. <= arma::any(energies.col(l)));
+			while (energies.n_cols > ++r and 1. <= arma::any(energies.col(r)));
 
 			// Try to extend borders to the right (since we're coming from the left),
 			// if area sum exceeds threshold defined as the area between the borders and max scale
@@ -113,11 +106,11 @@ std::vector<Vrtx> HaarTransform::extractVortices(
 
 					// Some very unintuitive steps right here
 					idx = arma::flipud(arma::unique(idx / mMaxScale));
-					for (std::size_t k(0); k < idx.n_rows; k++) {
-						densityThresh = mMaxScale * ((mr + idx[k]) - l);
-						areaSum = arma::accu(energies.submat(0, l, mMaxScale-1, mr+idx[k]));
+					for (double k : idx) {
+						densityThresh = mMaxScale * ((mr + k) - l);
+						areaSum = arma::accu(energies.submat(0, l, mMaxScale-1, mr+k));
 						if (areaSum >= densityThresh) {
-							r = mr + idx[k];
+							r = mr + k;
 							break;
 						}
 					}
@@ -146,13 +139,13 @@ int HaarTransform::nZeroCrossings(arma::mat const& vortex) {
 
 	// Normalize axis into [-1,1]
 	axis /= arma::abs(axis).max();
-	for (std::size_t i(0); i < axis.n_cols; i++) {
-		if (-.25 > axis[i]) {
-			axis[i] = -1.;
-		} else if (.25 > axis[i]) {
-			axis[i] = 0.;
+	for (double& d : axis) {
+		if (-.25 > d) {
+			d = -1.;
+		} else if (.25 > d) {
+			d = 0.;
 		} else {
-			axis[i] = 1.;
+			d = 1.;
 		}
 	}
 
