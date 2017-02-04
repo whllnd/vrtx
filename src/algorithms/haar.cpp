@@ -4,7 +4,6 @@
 namespace vrtx {
 namespace detection {
 
-// Move semantics allow to return local objects
 auto HaarTransform::detect() {
 
 	// Compute standard deviation of energies and store it in database, if not already done
@@ -93,11 +92,11 @@ auto HaarTransform::extractVortices(
 
 					// Some very unintuitive steps right here
 					idx = arma::flipud(arma::unique(idx / mScales));
-					for (std::size_t k(0); k < idx.n_rows; k++) {
-						densityThresh = mScales * ((mr + idx[k]) - l);
-						areaSum = arma::accu(energies.submat(0, l, mScales-1, mr+idx[k]));
+					for (double k : idx) {
+						densityThresh = mScales * ((mr + k) - l);
+						areaSum = arma::accu(energies.submat(0, l, mScales-1, mr+k));
 						if (areaSum >= densityThresh) {
-							r = mr + idx[k];
+							r = mr + k;
 							break;
 						}
 					}
@@ -126,13 +125,13 @@ auto HaarTransform::nZeroCrossings(arma::mat const& vortex) {
 
 	// Normalize axis into [-1,1]
 	axis /= arma::abs(axis).max();
-	for (std::size_t i(0); i < axis.n_cols; i++) {
-		if (-.25 > axis[i]) {
-			axis[i] = -1.;
-		} else if (.25 > axis[i]) {
-			axis[i] = 0.;
+	for (double& d : axis) {
+		if (-.25 > d) {
+			d = -1.;
+		} else if (.25 > d) {
+			d = 0.;
 		} else {
-			axis[i] = 1.;
+			d = 1.;
 		}
 	}
 
