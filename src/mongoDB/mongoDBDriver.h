@@ -28,11 +28,15 @@ namespace db {
 
 using bsoncxx::builder::stream::document;
 using bsoncxx::builder::stream::finalize;
+using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::close_array;
 
 class DBInstance {
 public:
 
-	DBInstance(std::string const& dbName="local", std::string const& collName="NVFOU512N3")
+	DBInstance(std::string const& dbName="local", std::string const& collName="nvfou512n3")
 	: mDBName(dbName)
 	, mCollName(collName)
 	{
@@ -48,6 +52,14 @@ public:
 	arma::cube queryTrajectories(std::string const& type, std::vector<int> const& pId);
 	arma::cube queryTrajectories(std::string const& type, int idFrom, int idTo);
 
+	int nTrajectories() { // TODO: Track trajectories with variable
+		auto cursor = mColl.find(document{} << "id" << open_document << "$gt" << -1 << close_document << finalize);
+		return std::distance(cursor.begin(), cursor.end());
+	}
+
+	template<typename T>
+	void createField(std::string const& fieldName, T const& fieldContent);
+
 private:
 
 	std::string mDBName;
@@ -56,6 +68,17 @@ private:
 	mongocxx::database mDB;
 	mongocxx::collection mColl;
 };
+
+template<typename T>
+void DBInstance::createField(std::string const& fieldName, T const& fieldContent) {
+	auto doc{document{}}
+	doc << fieldName << open_array;
+	for (auto const& elem : fieldContent) {
+		doc << elem;
+	}
+	doc << close_array << finalize;
+	mColl.insert_one(doc);
+}
 
 } // namespace db
 } // namespace vrtx

@@ -21,33 +21,38 @@ public:
 	: DetectionAlgorithm(db)
 	, mSigmaFactor(sigma)
 	, mMinRev(revolutions)
-	, mMaxScale((0 == maxScale) ? mStdDev.size() : maxScale)
+	, mScales(maxScale)
 	, mGapWidth(gapWidth)
-	{}
+	{
+		// Future: Determine number of scales depending on the length of a trajectory
+		// mScales = ...
+	}
 
 	std::vector<Vrtx> detect();
 
 private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
-	arma::mat medianHaarTransform(arma::mat trajectory);
-	std::vector<Vrtx> extractVortexCandidates(
+	auto medianHaarTransform(arma::mat trajectory); //std::vector<arma::rowvec>
+	auto extractVortexCandidates( // returns std::vector<Vrtx>
 		arma::mat const& traj,
 		arma::mat const& energies,
 		std::vector<Vrtx>& vortices,
 		int const pId
 	);
-	int nZeroCrossings(arma::mat const& vortex);
+	auto nZeroCrossings(arma::mat const& vortex);
+	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
+	void compStdDev(bool force=false);
 
 	int mSigmaFactor;
 	int mMinRev;
-	int mMaxScale;
+	int mScales;
 	int mGapWidth;
 
-	int mTimesteps;
-	int mDim;
-
+	int static constexpr mTimesteps = 3125;
+	int static constexpr mDim = 3;
 	double static constexpr mSqrt2 = std::sqrt(2.);
+	bool static constexpr mNoNormalization = false;
 };
 
 } // namespace detection
