@@ -1,7 +1,7 @@
 #include "algorithms/detectionAlgorithm.h"
 #include "algorithms/haar.h"
 #include "mongoDB/mongoDBDriver.h"
-#include "statistics/stats.h"
+//#include "statistics/stats.h"
 
 int main() {
 
@@ -10,9 +10,9 @@ int main() {
 
 	// Detect vortices
 	vrtx::detection::HaarTransform haar(db, 3, 2);
-	auto vortices = vrtx::detect(haar);
+	auto vortices = haar.detect();
 
 	// Gather statistics
-	vrtx::statistics::all(vortices);
+	//vrtx::statistics::all(vortices);
 }
 

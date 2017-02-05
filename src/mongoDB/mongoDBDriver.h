@@ -46,7 +46,7 @@ public:
 		mColl = mDB[mCollName];
 	}
 
-	~DBInstance(); // TODO: Disconnect from db
+	~DBInstance(); // TODO: Disconnect from db, but maybe this is done RAII style by mongo itself
 
 	arma::mat queryTrajectory(std::string const& type, int pId);
 	arma::cube queryTrajectories(std::string const& type, std::vector<int> const& pId);

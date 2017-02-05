@@ -92,7 +92,7 @@ auto HaarTransform::extractVortices(
 
 					// Some very unintuitive steps right here
 					idx = arma::flipud(arma::unique(idx / mScales));
-					for (double k : idx) {
+					for (double const& k : idx) {
 						densityThresh = mScales * ((mr + k) - l);
 						areaSum = arma::accu(energies.submat(0, l, mScales-1, mr+k));
 						if (areaSum >= densityThresh) {
@@ -149,7 +149,8 @@ auto HaarTransform::compStdDev(bool forceRecompute) {
 
 	// Check, if stdandard deviations have been stored in current db
 	std::vector<double> stdDev(mScales, 0.);
-	auto cursor = mDb.mColl.find(document{} << "stdDev" << finalize);
+	auto cursor = mDb.mColl.find(document{} << "stdDev"
+		<< open_document << "$exists" << true << close_document << finalize);
 	if (forceRecompute or cursor.begin() == cursor.end()) {
 
 		// Compute standard deviations from scratch
@@ -171,7 +172,7 @@ auto HaarTransform::compStdDev(bool forceRecompute) {
 	// Read standard deviations from database
 	} else {
 		for (std::size_t i(0); i < mScales; i++) { // Should equal mScales
-			stdDev[i] = cursor[i].get_double();
+			stdDev[i] = (*cursor.begin())["stdDev"][i].get_double();
 		}
 	}
 
