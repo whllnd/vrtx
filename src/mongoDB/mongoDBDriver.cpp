@@ -8,8 +8,8 @@ arma::mat DBInstance::queryTrajectory(std::string const& type, int pId) {
 
 	auto cursor = mColl.find(document{} << "id" << pId << finalize);
 	auto const& elem = (*cursor.begin())[type];
-	arma::mat m(TConf::nDim, TConf::TrajLen);
-	for (std::size_t i(0); i < TConf::TrajLen; i++) {
+	arma::mat m(Conf::nDim, Conf::TrajLen); // TODO
+	for (std::size_t i(0); i < Conf::TrajLen; i++) {
 		m.col(i) = arma::colvec{
 			elem["x"][i].get_double(),
 			elem["y"][i].get_double(),
@@ -20,11 +20,11 @@ arma::mat DBInstance::queryTrajectory(std::string const& type, int pId) {
 }
 
 arma::cube DBInstance::queryTrajectories(std::string const& type, std::vector<int> const& pIds) {
-	arma::cube result(pIds.size(), TConf::nDim, TConf::TrajLen);
+	arma::cube result(pIds.size(), Conf::nDim, Conf::TrajLen);
 	for (std::size_t i(0); i < pIds.size(); i++) {
 		result.slice(i) = queryTrajectory(type, pIds[i]);
 	}
-	return cube;
+	return result;
 }
 
 } // namespace db

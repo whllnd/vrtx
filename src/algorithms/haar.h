@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cassert>
 
 #include "detectionAlgorithm.h"
 #include "mongoDB/mongoDBDriver.h"
@@ -12,7 +13,7 @@ class HaarTransform : public DetectionAlgorithm {
 public:
 
 	HaarTransform(
-		DBInstance const& db,
+		db::DBInstance& db,
 		int sigma,
 		int revolutions,
 		int maxScale=5,
@@ -33,8 +34,9 @@ public:
 private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
+	auto compStdDev(bool force=false);
 	auto medianHaarTransform(arma::mat trajectory); //std::vector<arma::rowvec>
-	auto extractVortexCandidates( // returns std::vector<Vrtx>
+	auto extractVortices( // returns std::vector<Vrtx>
 		arma::mat const& traj,
 		arma::mat const& energies,
 		std::vector<Vrtx>& vortices,
@@ -42,7 +44,6 @@ private:
 	);
 	auto nZeroCrossings(arma::mat const& vortex);
 	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
-	void compStdDev(bool force=false);
 
 	int mSigmaFactor;
 	int mMinRev;

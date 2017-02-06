@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "algorithms/detectionAlgorithm.h"
 #include "algorithms/haar.h"
 #include "mongoDB/mongoDBDriver.h"
