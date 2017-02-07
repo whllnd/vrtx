@@ -137,7 +137,7 @@ auto HaarTransform::compStdDev(bool forceRecompute) {
 auto HaarTransform::extractVortices(
     arma::mat const& traj,
     arma::mat const& energies,
-	std::vector<Vrtx>& vortices,
+    std::vector<Vrtx>& vortices,
     int const pId
 ) {
 
