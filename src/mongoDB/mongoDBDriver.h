@@ -78,6 +78,9 @@ public:
 	template<typename T>
 	void setField(std::string const& field, T const& fieldContent);
 
+	template<typename T>
+	void getField<T>(std::string const& field);
+
 private:
 
 	template<typename T>

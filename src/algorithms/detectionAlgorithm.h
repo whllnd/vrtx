@@ -9,8 +9,8 @@ namespace vrtx {
 
 // Data type for storing the location of a detected vortex
 struct Vrtx {
-	int pId;
-	int timeIdx;
+	int id;
+	int timestamp;
 	int len;
 	int rev;
 };
@@ -26,6 +26,9 @@ class DetectionAlgorithm {
 public:
 	DetectionAlgorithm(db::DBInstance& db) : mDb(db) {}
 	virtual std::vector<Vrtx> detect() = 0;
+	db::DBInstance const& db() {
+		return mDb;
+	}
 
 protected:
 	db::DBInstance& mDb;

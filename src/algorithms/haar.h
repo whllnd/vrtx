@@ -26,7 +26,8 @@ public:
 	, mGapWidth(gapWidth)
 	{
 		// Future: Determine number of scales depending on the length of a trajectory
-		// mScales = ...
+		mTimesteps = db.queryField<int>("timesteps");
+		mDim = db.queryField<int>("dimensions");
 	}
 
 	std::vector<Vrtx> detect();
@@ -50,10 +51,9 @@ private:
 	int mScales;
 	int mGapWidth;
 
-	int static constexpr mTimesteps = 3125;
-	int static constexpr mDim = 3;
+	int mTimesteps;
+	int mDim;
 	double static constexpr mSqrt2 = std::sqrt(2.);
-	bool static constexpr mNoNormalization = false;
 };
 
 } // namespace detection
