@@ -208,6 +208,8 @@ std::vector<Vrtx> HaarTransform::detect() {
 		auto energyMat = buildEnergyMatrix(energies);
 		std::cout << "Energy matrix retrieved ... ";
 
+		visualize::energies(energyMat);
+
 		// Normalize energies by factorised standard deviations
 		for (std::size_t i(0); i < stdDev.size(); i++) {
 			energies[i] /= stdDev[i];

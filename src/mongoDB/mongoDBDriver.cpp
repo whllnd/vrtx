@@ -1,4 +1,5 @@
 #include "mongoDBDriver.h"
+#include "algorithms/detectionAlgorithm.h"
 
 namespace vrtx {
 namespace db {
@@ -25,6 +26,28 @@ arma::cube DBInstance::queryTrajectories(std::string const& type, std::vector<in
 		result.slice(i) = queryTrajectory(type, pIds[i]);
 	}
 	return result;
+}
+
+// Template getter =============================================================
+
+template<>
+double DBInstance::queryField<double>(std::string const& field) {
+	auto cursor = findField(field);
+	return (*cursor.begin())[field].get_double();
+}
+
+template<>
+int DBInstance::queryField<int>(std::string const& field) {
+	auto cursor = findField(field);
+	return (*cursor.begin())[field].get_int32();
+}
+
+template<>
+std::vector<Vrtx> DBInstance::queryField<std::vector<Vrtx>>(std::string const& field) {
+	std::vector<Vrtx> vortices;
+	auto cursor = findField(field);
+	// TODO: ...
+	return vortices;
 }
 
 } // namespace db

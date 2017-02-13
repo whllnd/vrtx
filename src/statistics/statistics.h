@@ -1,5 +1,10 @@
 #pragma once
 
+#include <vector>
+
+#include "algorithms/detectionAlgorithm.h"
+#include "mongoDB/mongoDBDriver.h"
+
 namespace vrtx {
 namespace statistics {
 
@@ -17,7 +22,7 @@ void evalDetectionAlgorithm(T&& alg) {
 	auto db = alg.db();
 
 	// Get ground truth data
-	auto gt = db.queryField<std::vector<Vrtx>>("ground_truth");
+	auto gt = std::vector<Vrtx>(); //db.queryField<std::vector<Vrtx>>("ground_truth"); TODO
 
 	// Get id's of ground truth data
 	std::vector<int> idVec(gt.size());

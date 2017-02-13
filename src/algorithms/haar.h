@@ -5,6 +5,7 @@
 
 #include "detectionAlgorithm.h"
 #include "mongoDB/mongoDBDriver.h"
+#include "tools/visualize.h"
 
 namespace vrtx {
 namespace detection {
@@ -26,8 +27,8 @@ public:
 	, mGapWidth(gapWidth)
 	{
 		// Future: Determine number of scales depending on the length of a trajectory
-		mTimesteps = db.queryField<int>("timesteps");
-		mDim = db.queryField<int>("dimensions");
+		//mTimesteps = db.queryField<int>("timesteps");
+		//mDim = db.queryField<int>("dimensions");
 	}
 
 	std::vector<Vrtx> detect();

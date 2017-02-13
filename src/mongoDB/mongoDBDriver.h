@@ -25,7 +25,6 @@ namespace Conf { // TODO: Somewhere else, maybe in db
 	std::size_t constexpr nDim    = 3;
 }
 
-
 namespace db {
 
 using bsoncxx::builder::stream::array;
@@ -64,6 +63,7 @@ public:
 		return std::distance(cursor.begin(), cursor.end());
 	}
 
+	// TODO: Maybe move this to private
 	auto findField(std::string const& field) {
 		return mColl.find(
 			document{} << field << open_document << "$exists" << true << close_document << finalize
@@ -76,10 +76,10 @@ public:
 	auto issueFind(T&& query);
 
 	template<typename T>
-	void setField(std::string const& field, T const& fieldContent);
+	T queryField(std::string const& field);
 
 	template<typename T>
-	void getField<T>(std::string const& field);
+	void setField(std::string const& field, T const& fieldContent);
 
 private:
 
@@ -102,17 +102,15 @@ private:
 	mongocxx::collection mColl;
 };
 
-/*
- * Some more generic query function
- */
+
+// Some more generic query function ============================================
 template<typename T>
 auto DBInstance::issueFind(T&& query) {
 	return mColl.find(query);
 }
 
-/*
- * Update a field in database
- */
+
+// Update a field in database ==================================================
 template<>
 inline void DBInstance::updateField(std::string const& field, std::vector<double> const& fieldContent) {
 	array arr{};
@@ -134,9 +132,8 @@ void DBInstance::updateField(std::string const& field, T const& fieldContent) {
 	);
 }
 
-/*
- * Create a field in database
- */
+
+// Create a field in database ==================================================
 template<> // TODO: std::vector<T> hinkriegen
 inline void DBInstance::createField(std::string const& fieldName, std::vector<double> const& fieldContent) {
 	array arr{};
