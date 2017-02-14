@@ -31,23 +31,18 @@ arma::cube DBInstance::queryTrajectories(std::string const& type, std::vector<in
 // Template getter =============================================================
 
 template<>
-double DBInstance::queryField<double>(std::string const& field) {
-	auto cursor = findField(field);
+double DBInstance::getField<double>(mongocxx::cursor const& cursor, std::string const& field) {
 	return (*cursor.begin())[field].get_double();
 }
 
 template<>
-int DBInstance::queryField<int>(std::string const& field) {
-	auto cursor = findField(field);
+int DBInstance::getField<int>(mongocxx::cursor const& cursor, std::string const& field) {
 	return (*cursor.begin())[field].get_int32();
 }
 
 template<>
-std::vector<Vrtx> DBInstance::queryField<std::vector<Vrtx>>(std::string const& field) {
-	std::vector<Vrtx> vortices;
-	auto cursor = findField(field);
-	// TODO: ...
-	return vortices;
+long DBInstance::getField<long>(mongocxx::cursor const& cursor, std::string const& field) {
+	return (*cursor.begin())[field].get_int32();
 }
 
 } // namespace db

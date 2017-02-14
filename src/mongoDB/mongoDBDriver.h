@@ -76,7 +76,7 @@ public:
 	auto issueFind(T&& query);
 
 	template<typename T>
-	T queryField(std::string const& field);
+	T queryField<T>(std::string const& field);
 
 	template<typename T>
 	void setField(std::string const& field, T const& fieldContent);
@@ -148,10 +148,8 @@ void DBInstance::createField(std::string const& field, T const& fieldContent) {
 	mColl.insert_one(document{} << field << fieldContent << finalize);
 }
 
-/*
- * Set a field in database;
- * if already present, it is updated, else created
- */
+
+// Set a field in database =====================================================
 template<typename T>
 void DBInstance::setField(std::string const& field, T const& fieldContent) {
 	if (existsField(field)) {
@@ -162,6 +160,15 @@ void DBInstance::setField(std::string const& field, T const& fieldContent) {
 		createField(field, fieldContent);
 	}
 }
+
+
+// Templated vector getter =====================================================
+template<typename T>
+std::vector<T> queryField<std::vector<T>>(std::string const& field) {
+	auto cursor = findField(field);
+	auto arr = (*cursor.begin()).get_array();
+
+
 
 } // namespace db
 } // namespace vrtx
