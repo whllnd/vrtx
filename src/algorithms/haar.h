@@ -15,7 +15,7 @@ public:
 
 	HaarTransform(
 		db::DBInstance& db,
-		int sigma,
+		double sigma,
 		int revolutions,
 		int maxScale=5,
 		int gapWidth=15
@@ -44,17 +44,18 @@ private:
 		std::vector<Vrtx>& vortices,
 		int const pId
 	);
-	auto nZeroCrossings(arma::mat const& vortex);
+	auto nZeroCrossings(arma::mat&& vortex);
 	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
 
-	int mSigmaFactor;
+	double mSigmaFactor;
 	int mMinRev;
 	int mScales;
 	int mGapWidth;
 
-	int mTimesteps;
-	int mDim;
+	int mTimesteps = 3125;
+	int mDim = 3;
 	double static constexpr mSqrt2 = std::sqrt(2.);
+	auto static constexpr mFieldStdDev = "standard_deviations";
 };
 
 } // namespace detection

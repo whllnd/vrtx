@@ -11,7 +11,7 @@ int main() {
 	vrtx::db::DBInstance nvfou512n3;
 
 	// Detect vortices
-	vrtx::detection::HaarTransform haar(nvfou512n3, 3, 2);
+	vrtx::detection::HaarTransform haar(nvfou512n3, 3., 2);
 	auto vortices = haar.detect();
 
 	// Gather statistics

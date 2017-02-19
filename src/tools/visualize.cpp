@@ -7,7 +7,7 @@ namespace visualize {
 auto energies(arma::mat energyMat) -> void {
 
 	// Prepare tmp filename
-	char tmp[] = "/tmp/gaia.XXXXXX";
+	char tmp[] = "/tmp/vrtx.XXXXXX";
 	int r = mkstemp(tmp);
 	std::string fname(tmp + std::string(".png"));
 
@@ -16,8 +16,17 @@ auto energies(arma::mat energyMat) -> void {
 	energyMat /= energyMat.max();
 	energyMat *= 255.;
 
-	energyMat.save(fname, arma::pgm_binary);
-	system(std::string("feh " + fname).c_str());
+	// Expand rows
+	int f(50);
+	arma::mat img(energyMat.n_rows * f, energyMat.n_cols);
+	for (std::size_t i(0); i < energyMat.n_rows; i++) {
+		for (std::size_t j(0); j < f; j++) {
+			img.row(i * f + j) = energyMat.row(i);
+		}
+	}
+
+	img.save(fname, arma::pgm_binary);
+	r = system(std::string("feh " + fname).c_str());
 }
 
 } // namespace visualize

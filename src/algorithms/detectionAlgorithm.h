@@ -13,6 +13,13 @@ struct Vrtx {
 	int timestamp;
 	int len;
 	int rev;
+	void print(std::string&& m) {
+		std::cout << m << std::endl;
+		std::cout << "\tid:          " << id << std::endl;
+		std::cout << "\ttimestamp:   " << timestamp << std::endl;
+		std::cout << "\tlength:      " << len << std::endl;
+		std::cout << "\trevolutions: " << rev << std::endl;
+	}
 };
 
 // Templated base function; eventually to be preferred

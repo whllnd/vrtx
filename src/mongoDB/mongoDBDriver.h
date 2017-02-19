@@ -72,11 +72,16 @@ public:
 
 	void deleteField(std::string&& field) {} // TODO
 
+	bool existsField(std::string const& field) {
+		auto cursor = findField(field);
+		return cursor.begin() != cursor.end();
+	}
+
 	template<typename T>
 	auto issueFind(T&& query);
 
 	template<typename T>
-	T queryField<T>(std::string const& field);
+	T queryField(std::string&& field);
 
 	template<typename T>
 	void setField(std::string const& field, T const& fieldContent);
@@ -89,10 +94,8 @@ private:
 	template<typename T>
 	void updateField(std::string const& field, T const& fieldContent);
 
-	bool existsField(std::string const& field) {
-		auto cursor = findField(field);
-		return cursor.begin() != cursor.end();
-	}
+	template<typename T>
+	T getField(bsoncxx::document::element&& el);
 
 	std::string mDBName;
 	std::string mCollName;
@@ -163,10 +166,25 @@ void DBInstance::setField(std::string const& field, T const& fieldContent) {
 
 
 // Templated vector getter =====================================================
-template<typename T>
-std::vector<T> queryField<std::vector<T>>(std::string const& field) {
-	auto cursor = findField(field);
-	auto arr = (*cursor.begin()).get_array();
+//template<typename T>
+//T DBInstance::queryField(std::string&& field) {
+//	auto cursor = findField(field);
+//	if (cursor.begin() == cursor.end()) {
+//		throw std::logic_error("No field \"" + field + "\" in database.");
+//	}
+//	return getField<T>((*cursor.begin())[field]);
+//}
+
+//template<typename T>
+//std::vector<T> DBInstance::queryField<std::vector<T>>(std::string&& field) {
+//	auto cursor = findField(field);
+//	auto arr = (*cursor.begin()).get_array();
+//	std::vector<T> v(arr.count());
+//	for (std::size_t i(0); i < v.size(); i++) {
+//		v.push_back(getField<T>(arr[field][i]));
+//	}
+//	return v;
+//}
 
 
 

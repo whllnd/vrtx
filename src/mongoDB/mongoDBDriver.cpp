@@ -29,20 +29,36 @@ arma::cube DBInstance::queryTrajectories(std::string const& type, std::vector<in
 }
 
 // Template getter =============================================================
-
 template<>
-double DBInstance::getField<double>(mongocxx::cursor const& cursor, std::string const& field) {
-	return (*cursor.begin())[field].get_double();
+double DBInstance::getField<double>(bsoncxx::document::element&& el) {
+	return el.get_double();
 }
 
 template<>
-int DBInstance::getField<int>(mongocxx::cursor const& cursor, std::string const& field) {
-	return (*cursor.begin())[field].get_int32();
+int DBInstance::getField<int>(bsoncxx::document::element&& el) {
+	return el.get_int32();
 }
 
 template<>
-long DBInstance::getField<long>(mongocxx::cursor const& cursor, std::string const& field) {
-	return (*cursor.begin())[field].get_int32();
+long DBInstance::getField<long>(bsoncxx::document::element&& el) {
+	return el.get_int64();
+}
+
+// Since an bsoncxx::document::element has no function to determine the number of
+// underlying elements in case of an array, we're doing this EAFP style
+// TODO: Get rid of EAFP, since it seems like a waste of performance
+template<>
+std::vector<double> DBInstance::queryField<std::vector<double>>(std::string&& field) {
+	std::vector<double> v;
+	auto el = *findField(field).begin();
+	try {
+		for (std::size_t i(0); ; i++) {
+			v.push_back(el[field][i].get_double());
+		}
+	} catch (...) {
+		std::cout << "Found " << v.size() << " elements in array." << std::endl;
+	}
+	return v;
 }
 
 } // namespace db
