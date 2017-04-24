@@ -52,14 +52,13 @@ class HaarTransformDetection:
             if np.any(mc[:,i] >= 1.):
 
                 # Find left and right borders of potential vortex region
-                l = i-1
-                while l > 0 and np.any(mc[:,l] >= 1.):
+                l, r = i, i
+                while l-1 > 0 and np.any(mc[:,l-1] >= 1.):
                     l -= 1
-                r = i+1
-                while r < mc.shape[1]-1 and np.any(mc[:,r] >= 1.):
+                while r+1 < mc.shape[1]-1 and np.any(mc[:,r+1] >= 1.):
                     r += 1
 
-                thresh = (self.nscales * (r - l))
+                thresh = self.nscales * (r - l)
                 s = mc[:,l:r].sum()
 
                 # Found a candidate (but we need to expand to the right to

@@ -14,46 +14,39 @@ class HaarTransform : public DetectionAlgorithm {
 public:
 
 	HaarTransform(
-		db::DBInstance& db,
+		db::nvfou512n3& db,
 		double sigma,
 		int revolutions,
-		int gapWidth=15
+		int gapWidth=16
 	)
 	: DetectionAlgorithm(db)
-	, mSigmaFactor(sigma)
+	, mSigma(sigma)
 	, mMinRev(revolutions)
 	, mGapWidth(gapWidth)
 	{}
 
-	std::vector<Vrtx> detect();
+	std::vector<Vrtx> detect(int minID=0, int maxID=-1);
 
 private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
-	//auto compStdDev(bool force=false);
-	auto medianHaarTransform(arma::mat trajectory); //std::vector<arma::rowvec>
-	auto extractVortices( // returns std::vector<Vrtx>
+	auto haarTransform(arma::mat trajectory);
+	auto findVortices(
 		arma::mat const& traj,
 		arma::mat const& energies,
 		std::vector<Vrtx>& vortices,
 		int const pId
 	);
 	auto zeroCross(arma::mat&& vortex);
-	//auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
+	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
 
-	double mSigmaFactor;
+	int static constexpr mScales = 5;
+	double mSigma;
 	int mMinRev;
-	int constexpr mScales = 5;
 	int mGapWidth;
 
 	double static constexpr mSqrt2 = std::sqrt(2.);
-	arma::colvec static const mStandardDeviations{
-		0.111938138929756,
-		0.176692813872196,
-		0.42999668448614,
-		1.06530491695008,
-		2.05115772105404
-	};
+	arma::colvec static const mStandardDeviations;
 };
 
 } // namespace detection

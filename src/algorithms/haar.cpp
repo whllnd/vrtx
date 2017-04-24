@@ -4,7 +4,15 @@
 namespace vrtx {
 namespace detection {
 
-auto HaarTransform::nZeroCrossings(arma::mat&& vortex) {
+arma::colvec const HaarTransform::mStandardDeviations{
+	0.111938138929756,
+	0.176692813872196,
+	0.42999668448614,
+	1.06530491695008,
+	2.05115772105404
+};
+
+auto HaarTransform::zeroCross(arma::mat&& vortex) {
 
 	// Pick axis of largest variance
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
@@ -57,8 +65,8 @@ auto HaarTransform::buildEnergyMatrix(std::vector<arma::rowvec> const& energies)
 	return energyMat;
 }
 
-// We pass a copy, since we have to copy the values anyway
-auto HaarTransform::medianHaarTransform(arma::mat traj) {
+// We pass a copy, since we have to copy the values anyway during padding
+auto HaarTransform::haarTransform(arma::mat traj) {
 
 	// Zero-pad to the next power of two
 	std::size_t initSize(traj.n_cols);
@@ -71,8 +79,6 @@ auto HaarTransform::medianHaarTransform(arma::mat traj) {
 		odd[i] = 2 * i + 1;
 		even[i] = 2 * i;
 	}
-	//odd.imbue([]() { static int i = 0; return 2 * i++ + 1; });
-	//even.imbue([]() { static int i = 0; return 2 * i++; });
 
 	// Compute coefficients
 	int scaleLen = traj.n_cols / 2;
@@ -83,79 +89,55 @@ auto HaarTransform::medianHaarTransform(arma::mat traj) {
 		arma::mat a = (traj(dim, even.cols(0, until)) + traj(dim, odd.cols(0, until))) / mSqrt2;
 
 		// Select median energy (= absolute detail coefficient value)
-		if (0 == i) {
-			energies[i] = arma::rowvec{arma::median(arma::abs(d))}.subvec(0, initSize/2);
-		} else {
-			energies[i] = arma::median(arma::abs(d));
-		}
+		//if (0 == i) {
+		//	energies[i] = arma::rowvec{arma::median(arma::abs(d))}.subvec(0, initSize/2);
+		//} else {
+		//}
+		arma::rowvec m{ arma::median(arma::abs(d)) };
+		energies[i] = m; //arma::median(arma::abs(d));
 		traj = a;
 	}
 
-	return energies;
+	return buildEnergyMatrix(energies);
 }
 
-auto HaarTransform::compStdDev(bool forceRecompute) {
-
-	// Check, if stdandard deviations have been stored in current db
-	if (mDb.existsField(mFieldStdDev)) {
-		return mDb.queryField<std::vector<double>>(mFieldStdDev);
-	}
-
-	// Compute standard deviations from scratch
-	std::vector<double> stdDev(mScales, 0.);
-	std::vector<double> N(mScales, 0.);
-	for (std::size_t i(0); i < 10/*mDb.nTrajectories()*/; i++) {
-		auto energies = medianHaarTransform(mDb.queryTrajectory(Type::LatAcc, i));
-		for (std::size_t j(0); j < stdDev.size(); j++) {
-			stdDev[j] += arma::accu(energies[j]);
-			N[j] += energies[j].n_cols;
-		}
-	}
-
-	for (std::size_t i = 0; i < stdDev.size(); i++) {
-		stdDev[i] /= N[i];
-	}
-
-	// Store values in database
-	mDb.setField(mFieldStdDev, stdDev);
-	return stdDev;
-}
-
-auto HaarTransform::extractVortices(
+auto HaarTransform::findVortices(
     arma::mat const& traj,
     arma::mat const& energies,
     std::vector<Vrtx>& vortices,
-    int const pId
+    int const id
 ) {
 
 	// Step through energies to find regions of sufficient density
 	int i(0);
 	while (energies.n_cols > i) {
-
 		if (arma::any(1. <= energies.col(i))) {
 
 			// Find left border; TODO: Maybe this can be omitted
-			int l{i+1}, r{i};
-			while (0 < --l                 and arma::any(1. <= energies.col(l)));
-			while (energies.n_cols-1 > ++r and arma::any(1. <= energies.col(r)));
+			int l(i), r(i+1);
+			while (0 <= l-1 and arma::any(1. <= energies.col(l-1))) { l--; }
+			while (energies.n_cols-1 > r and arma::any(1. <= energies.col(r))) { r++; }
 
-			// Try to extend borders to the right (since we're coming from the left),
-			// if area sum exceeds threshold defined as the area between the borders and max scale
-			double densityThresh = mScales * (r - l);
-			double areaSum = arma::accu(energies.submat(0, l+1, mScales-1, r-1));
-			if (areaSum >= densityThresh) { // Basically, we found a vortex candidate
-				int wr = std::min(int(energies.n_cols) - 1, r + mGapWidth);
-				int mr = std::min(int(energies.n_cols) - 1, r + 1);
+			if (0 >= (r-l)) { std::cout << r << " " << l << std::endl; throw std::logic_error("lol!"); } // TODO: Debug
+
+			// If the combined energy of the area defined by l and r exceeds the energy threshold
+			// defined by the area itself, a vortex is said to have been found; in this case
+			// try to extend borders to the right to bridge possible energy gaps
+			double thresh(mScales * (r - l));
+			double areaSum(arma::accu(energies.submat(0, l, mScales-1, r-1)));
+			if (areaSum >= thresh) {
+				int wr(std::min(int(energies.n_cols)-1, r+mGapWidth));
+				int mr(std::min(int(energies.n_cols)-1, r+1));
 				if (mr < wr) {
-					arma::uvec idx = arma::find(energies.submat(0, mr, mScales-1, wr) >= 1.);
+					arma::uvec idx(arma::find(energies.submat(0, mr, mScales-1, wr) >= 1.));
 					if (0 < idx.n_rows) {
 
 						// Some very unintuitive steps right here
 						idx = arma::flipud(arma::unique(idx / mScales));
 						for (double const& k : idx) {
-							densityThresh = mScales * ((mr + k) - l);
+							thresh = mScales * ((mr + k) - l);
 							areaSum = arma::accu(energies.submat(0, l, mScales-1, mr+k));
-							if (areaSum >= densityThresh) {
+							if (areaSum >= thresh) {
 								r = mr + k;
 								break;
 							}
@@ -163,55 +145,48 @@ auto HaarTransform::extractVortices(
 					}
 				}
 
-				// Add vortex to list
+				// Now, add vortex to list
 				int left(2*l), right(std::min(3124, 2*r));
-				Vrtx vortex{pId, left, right-left, nZeroCrossings(traj.submat(0, left, mDim-1, right))};
-				vortex.print("v:");
+				Vrtx vortex{id, left, right-left, zeroCross(traj.submat(0, left, mDb.trajDim()-1, right))};
+				vortex.print("vortex:");
 				vortices.push_back(vortex);
 			}
-
 			i = r;
-		} else {
-			i++;
+			continue;
 		}
+		i++;
 	}
 
 	return vortices;
 }
 
-std::vector<Vrtx> HaarTransform::detect() {
+std::vector<Vrtx> HaarTransform::detect(int minID, int maxID) {
 
-	// Compute standard deviation of energies and store it in database, if not already done
-	auto stdDev = compStdDev();
-	if (stdDev.size() != mScales) {
-		throw std::logic_error("Number of standard deviations does not equal HaarTransform::mScales");
+	if (-1 == maxID) { // Perform detection over full set
+		maxID = mDb.count();
 	}
 
 	std::vector<Vrtx> vortices;
-	for (int pId(0); pId < 10 /*mDb.nTrajectories()*/; pId++) {
+	for (int id(minID); id < maxID; id++) {
 
-		std::cout << "Processing trajectory with id " << pId << " ... ";
+		std::cout << "\rCurrent trajectory id: " << id << std::endl;
 
-		// Get trajectory with id i from database
-		auto traj = mDb.queryTrajectory(Type::LatAcc, pId);
+		// Get current trajectory from database
+		auto traj = mDb.trajectory(id, db::nvfou512n3::latAcc);
 
-		// Compute energies of detail coefficients and build energy matrix
-		auto energies = medianHaarTransform(traj);
-		auto energyMat = buildEnergyMatrix(energies);
+		// Compute median energies of detail coefficients, which by default come
+		// as an energy matrix instead of a somewhat pyramid-esque filter bank,
+		// i.e. return type is arma::mat for that matter
+		auto energies = haarTransform(traj);
+		//visualize::energies(energies);
 
-		//visualize::energies(energyMat);
-
-		// Normalize energies by factorised standard deviations
-		if (energyMat.n_rows != stdDev.size()) {
-			throw std::logic_error("Number of rows do not match number of deviations.");
-		}
-		for (std::size_t i(0); i < stdDev.size(); i++) {
-			energyMat.row(i) /= mSigmaFactor * stdDev[i];
+		// Normalize by sigma'ed standard deviations; TODO: Vectorized version
+		for (std::size_t i(0); i < mStandardDeviations.n_rows; i++) {
+			energies.row(i) /= mSigma * mStandardDeviations[i];
 		}
 
-		// Try to extract vortex candidates
-		extractVortices(traj, energyMat, vortices, pId);
-		std::cout << "done with " << vortices.size() << " found vortices" << std::endl;
+		// Try to extract some vortex candidates
+		findVortices(traj, energies, vortices, id);
 	}
 
 	return vortices;

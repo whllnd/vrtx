@@ -8,10 +8,11 @@
 int main() {
 
 	// Connect to database
-	vrtx::db::DBInstance nvfou512n3;
+	vrtx::db::nvfou512n3 db;
+	db.info();
 
 	// Detect vortices
-	vrtx::detection::HaarTransform haar(nvfou512n3, 3., 2);
+	vrtx::detection::HaarTransform haar(db, 3., 2);
 	auto vortices = haar.detect();
 
 	// Gather statistics
