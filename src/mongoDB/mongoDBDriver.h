@@ -9,21 +9,9 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
-
 #include <armadillo>
 
 namespace vrtx {
-
-namespace Type {
-	auto constexpr Position = "p";
-	auto constexpr Velocity = "v";
-	auto constexpr LatAcc   = "ap";
-}
-
-namespace Conf { // TODO: Somewhere else, maybe in db
-	std::size_t constexpr TrajLen = 3125;
-	std::size_t constexpr nDim    = 3;
-}
 
 namespace db {
 
@@ -35,26 +23,31 @@ using bsoncxx::builder::stream::close_document;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::close_array;
 
-class DBInstance {
+class nvfou512n3 {
 public:
 
-	DBInstance(std::string const& dbName="local", std::string const& collName="nvfou512n3")
+	nvfou512n3(std::string const& dbName="local", std::string const& collName="nvfou512n3")
 	: mDBName(dbName)
 	, mCollName(collName)
 	{
 		// Connect to database running on localhost:27017 and access db / collection
-		std::cout << "Connecting to database ... ";
 		mClient = std::unique_ptr<mongocxx::client>(new mongocxx::client{mongocxx::uri{}});
 		mDB = (*mClient)[mDBName];
 		mColl = mDB[mCollName];
-		std::cout << "done." << std::endl;
 	}
 
-	~DBInstance() {}
+	~nvfou512n3() {}
+
+	namespace type {
+		auto constexpr Position = "p";
+		auto constexpr Velocity = "v";
+		auto constexpr LatAcc   = "ap";
+	}
 
 	arma::mat queryTrajectory(std::string const& type, int pId);
 	arma::cube queryTrajectories(std::string const& type, std::vector<int> const& pId);
 	arma::cube queryTrajectories(std::string const& type, int idFrom, int idTo);
+	arma::mat trajectory(int id, std::string const& type=type::LatAcc);
 
 	int nTrajectories() { // TODO: Track trajectories with variable
 		auto cursor = mColl.find(
@@ -62,6 +55,14 @@ public:
 		);
 		return std::distance(cursor.begin(), cursor.end());
 	}
+
+	int count() {
+		auto cursor = mColl.find(
+			document{} << "id" << open_document << "$exists" << true << close_document << finalize
+		);
+		return std::distance(cursor.begin(), cursor.end());
+	}
+
 
 	// TODO: Maybe move this to private
 	auto findField(std::string const& field) {
@@ -97,6 +98,9 @@ private:
 	template<typename T>
 	T getField(bsoncxx::document::element&& el);
 
+	int static constexpr mTrajLen(3125);
+	int static constexpr mDim(3);
+
 	std::string mDBName;
 	std::string mCollName;
 
@@ -108,14 +112,14 @@ private:
 
 // Some more generic query function ============================================
 template<typename T>
-auto DBInstance::issueFind(T&& query) {
+auto nvfou512n3::issueFind(T&& query) {
 	return mColl.find(query);
 }
 
 
 // Update a field in database ==================================================
 template<>
-inline void DBInstance::updateField(std::string const& field, std::vector<double> const& fieldContent) {
+inline void nvfou512n3::updateField(std::string const& field, std::vector<double> const& fieldContent) {
 	array arr{};
 	for (auto const& elem : fieldContent) {
 		arr << elem;
@@ -128,7 +132,7 @@ inline void DBInstance::updateField(std::string const& field, std::vector<double
 }
 
 template<typename T>
-void DBInstance::updateField(std::string const& field, T const& fieldContent) {
+void nvfou512n3::updateField(std::string const& field, T const& fieldContent) {
 	mColl.update_one(
 		document{} << field << open_document << "$exists" << true << close_document << finalize,
 		document{} << "$set" << open_document << field << fieldContent << close_document << finalize
@@ -138,7 +142,7 @@ void DBInstance::updateField(std::string const& field, T const& fieldContent) {
 
 // Create a field in database ==================================================
 template<> // TODO: std::vector<T> hinkriegen
-inline void DBInstance::createField(std::string const& fieldName, std::vector<double> const& fieldContent) {
+inline void nvfou512n3::createField(std::string const& fieldName, std::vector<double> const& fieldContent) {
 	array arr{};
 	for (auto const& elem : fieldContent) {
 		arr << elem;
@@ -147,14 +151,14 @@ inline void DBInstance::createField(std::string const& fieldName, std::vector<do
 }
 
 template<typename T>
-void DBInstance::createField(std::string const& field, T const& fieldContent) {
+void nvfou512n3::createField(std::string const& field, T const& fieldContent) {
 	mColl.insert_one(document{} << field << fieldContent << finalize);
 }
 
 
 // Set a field in database =====================================================
 template<typename T>
-void DBInstance::setField(std::string const& field, T const& fieldContent) {
+void nvfou512n3::setField(std::string const& field, T const& fieldContent) {
 	if (existsField(field)) {
 		std::cout << "Updating ..." << std::endl;
 		updateField(field, fieldContent);
@@ -167,7 +171,7 @@ void DBInstance::setField(std::string const& field, T const& fieldContent) {
 
 // Templated vector getter =====================================================
 //template<typename T>
-//T DBInstance::queryField(std::string&& field) {
+//T nvfou512n3::queryField(std::string&& field) {
 //	auto cursor = findField(field);
 //	if (cursor.begin() == cursor.end()) {
 //		throw std::logic_error("No field \"" + field + "\" in database.");
@@ -176,7 +180,7 @@ void DBInstance::setField(std::string const& field, T const& fieldContent) {
 //}
 
 //template<typename T>
-//std::vector<T> DBInstance::queryField<std::vector<T>>(std::string&& field) {
+//std::vector<T> nvfou512n3::queryField<std::vector<T>>(std::string&& field) {
 //	auto cursor = findField(field);
 //	auto arr = (*cursor.begin()).get_array();
 //	std::vector<T> v(arr.count());

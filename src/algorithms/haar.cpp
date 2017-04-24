@@ -144,8 +144,8 @@ auto HaarTransform::extractVortices(
 			double densityThresh = mScales * (r - l);
 			double areaSum = arma::accu(energies.submat(0, l+1, mScales-1, r-1));
 			if (areaSum >= densityThresh) { // Basically, we found a vortex candidate
-				int wr = std::min(int(energies.n_cols), r + mGapWidth);
-				int mr = std::min(int(energies.n_cols), r + 1);
+				int wr = std::min(int(energies.n_cols) - 1, r + mGapWidth);
+				int mr = std::min(int(energies.n_cols) - 1, r + 1);
 				if (mr < wr) {
 					arma::uvec idx = arma::find(energies.submat(0, mr, mScales-1, wr) >= 1.);
 					if (0 < idx.n_rows) {
@@ -188,7 +188,7 @@ std::vector<Vrtx> HaarTransform::detect() {
 	}
 
 	std::vector<Vrtx> vortices;
-	for (std::size_t pId(0); pId < 10 /*mDb.nTrajectories()*/; pId++) {
+	for (int pId(0); pId < 10 /*mDb.nTrajectories()*/; pId++) {
 
 		std::cout << "Processing trajectory with id " << pId << " ... ";
 
