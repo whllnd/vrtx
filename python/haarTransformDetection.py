@@ -10,7 +10,7 @@ class HaarTransformDetection:
         self.db = dbInstance
         self.sigma = sigma
         self.minLen = minLen
-        self.ndim = 5 # Since standard deviations have only been computed for the first 5 coefficient levels
+        self.nscales = 5 # Since standard deviations have only been computed for the first 5 coefficient levels
         self.standardDeviations = np.array([0.111938138929756,
                                             0.176692813872196,
                                             0.42999668448614,
@@ -59,7 +59,7 @@ class HaarTransformDetection:
                 while r < mc.shape[1]-1 and np.any(mc[:,r] >= 1.):
                     r += 1
 
-                thresh = (self.ndim * (r - l))
+                thresh = (self.nscales * (r - l))
                 s = mc[:,l:r].sum()
 
                 # Found a candidate (but we need to expand to the right to
@@ -72,7 +72,7 @@ class HaarTransformDetection:
                         w.sort()
                         w = w[::-1]
                         for k in range(w.shape[0]):
-                            thresh = self.ndim * ((mr + w[k]) - l)
+                            thresh = self.nscales * ((mr + w[k]) - l)
                             if mc[:,l:mr+w[k]].sum() >= thresh:
                                 r = mr + w[k]
                                 break
@@ -126,7 +126,7 @@ class HaarTransformDetection:
 
             # Take the median and normalize by sigma
             m = np.median(coeff, axis=0)
-            m = m[:self.ndim] / (self.sigma * self.standardDeviations)[:,None]
+            m = m[:self.nscales] / (self.sigma * self.standardDeviations)[:,None]
 
             # Filter normalized median coefficients for vortex candidates
             candidates, n = self.findCandidates(m)
