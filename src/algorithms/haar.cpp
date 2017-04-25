@@ -18,17 +18,13 @@ arma::colvec const HaarTransform::mHanningWindow{
 	 0.2, 0.1809017, 0.1309017, 0.0690983, 0.0190983,  0.
 };
 
-auto HaarTransform::smooth(arma::rowvec const& x) {
-	return arma::conv(x, mHanningWindow, "same");
-}
-
 auto HaarTransform::zeroCross(arma::mat&& vortex) {
 
 	// Pick axis of largest variance
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
 
 	// Smooth trajectory to get rid of ripples
-	axis = smooth(axis);
+	axis = arma::conv(x, mHanningWindow, "same");
 
 	// Discretize axis into [-1,0,1]
 	axis /= arma::abs(axis).max();
