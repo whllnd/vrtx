@@ -4,6 +4,7 @@
 namespace vrtx {
 namespace detection {
 
+// Precomputed standard deviations of energies
 arma::colvec const HaarTransform::mStandardDeviations{
 	0.111938138929756,
 	0.176692813872196,
@@ -12,15 +13,24 @@ arma::colvec const HaarTransform::mStandardDeviations{
 	2.05115772105404
 };
 
+arma::colvec const HaarTransform::mHanningWindow{
+	0., 0.0190983, 0.0690983, 0.1309017, 0.1809017,
+	 0.2, 0.1809017, 0.1309017, 0.0690983, 0.0190983,  0.
+};
+
+auto HaarTransform::smooth(arma::rowvec const& x) {
+	return arma::conv(x, mHanningWindow, "same");
+}
+
 auto HaarTransform::zeroCross(arma::mat&& vortex) {
 
 	// Pick axis of largest variance
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
 
 	// Smooth trajectory to get rid of ripples
-	// TODO: smoothAxis(axis);
+	axis = smooth(axis);
 
-	// Normalize axis into [-1,1]
+	// Discretize axis into [-1,0,1]
 	axis /= arma::abs(axis).max();
 	for (double& d : axis) {
 		if (-.25 > d) {
@@ -32,7 +42,7 @@ auto HaarTransform::zeroCross(arma::mat&& vortex) {
 		}
 	}
 
-	int cross = 0;
+	int cross(0);
 	for (std::size_t i(0); i < axis.n_cols - 1; i++) {
 		if (axis[i] != axis[i+1]) {
 			cross++;
@@ -45,7 +55,7 @@ auto HaarTransform::zeroCross(arma::mat&& vortex) {
 auto HaarTransform::buildEnergyMatrix(std::vector<arma::rowvec> const& energies) {
 
 	arma::mat energyMat(energies.size(), energies[0].n_cols);
-	int scaleLen = std::pow(2, int(std::log2(energyMat.n_cols)) + 1);
+	int scaleLen(std::pow(2, int(std::log2(energyMat.n_cols)) + 1));
 
 	// Pad coefficients to "fit" the overall scale length
 	for (std::size_t i(0); i < energies.size(); i++) {
@@ -89,12 +99,8 @@ auto HaarTransform::haarTransform(arma::mat traj) {
 		arma::mat a = (traj(dim, even.cols(0, until)) + traj(dim, odd.cols(0, until))) / mSqrt2;
 
 		// Select median energy (= absolute detail coefficient value)
-		//if (0 == i) {
-		//	energies[i] = arma::rowvec{arma::median(arma::abs(d))}.subvec(0, initSize/2);
-		//} else {
-		//}
 		arma::rowvec m{ arma::median(arma::abs(d)) };
-		energies[i] = m; //arma::median(arma::abs(d));
+		energies[i] = m;
 		traj = a;
 	}
 
@@ -145,11 +151,13 @@ auto HaarTransform::findVortices(
 					}
 				}
 
-				// Now, add vortex to list
-				int left(2*l), right(std::min(3124, 2*r));
-				Vrtx vortex{id, left, right-left, zeroCross(traj.submat(0, left, mDb.trajDim()-1, right))};
-				vortex.print("vortex:");
-				vortices.push_back(vortex);
+				// Now, add vortex to list if vortex length satisfies minimum length
+				if (mMinLen / 2 <= r - l) {
+					int left(2*l), right(std::min(3124, 2*r));
+					Vrtx vortex{id, left, right-left, zeroCross(traj.submat(0, left, mDb.trajDim()-1, right))};
+					vortex.print("vortex:");
+					vortices.push_back(vortex);
+				}
 			}
 			i = r;
 			continue;

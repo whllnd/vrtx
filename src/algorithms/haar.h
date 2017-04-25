@@ -17,12 +17,14 @@ public:
 		db::nvfou512n3& db,
 		double sigma,
 		int revolutions,
-		int gapWidth=16
+		int gapWidth=16,
+		int minLen=50
 	)
 	: DetectionAlgorithm(db)
 	, mSigma(sigma)
 	, mMinRev(revolutions)
 	, mGapWidth(gapWidth)
+	, mMinLin(minLen)
 	{}
 
 	std::vector<Vrtx> detect(int minID=0, int maxID=-1);
@@ -44,9 +46,11 @@ private:
 	double mSigma;
 	int mMinRev;
 	int mGapWidth;
+	int mMinLen;
 
 	double static constexpr mSqrt2 = std::sqrt(2.);
 	arma::colvec static const mStandardDeviations;
+	arma::colvec static const mHanningWindow;
 };
 
 } // namespace detection
