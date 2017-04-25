@@ -32,21 +32,21 @@ public:
 private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
-	auto haarTransform(arma::mat trajectory);
+	auto haarTransform(arma::mat trajectory) const;
 	auto findVortices(
 		arma::mat const& traj,
 		arma::mat const& energies,
 		std::vector<Vrtx>& vortices,
 		int const pId
-	);
-	auto zeroCross(arma::mat&& vortex);
-	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies);
+	) const;
+	auto zeroCross(arma::mat&& vortex) const;
+	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies) const;
 
 	int static constexpr mScales = 5;
-	double mSigma;
-	int mMinRev;
-	int mGapWidth;
-	int mMinLen;
+	double const mSigma;
+	int const mMinRev;
+	int const mGapWidth;
+	int const mMinLen;
 
 	double static constexpr mSqrt2 = std::sqrt(2.);
 	arma::colvec static const mStandardDeviations;

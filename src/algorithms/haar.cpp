@@ -18,7 +18,7 @@ arma::colvec const HaarTransform::mHanningWindow{
 	 0.2, 0.1809017, 0.1309017, 0.0690983, 0.0190983,  0.
 };
 
-auto HaarTransform::zeroCross(arma::mat&& vortex) {
+auto HaarTransform::zeroCross(arma::mat&& vortex) const {
 
 	// Pick axis of largest variance
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
@@ -48,7 +48,7 @@ auto HaarTransform::zeroCross(arma::mat&& vortex) {
 	return cross;
 }
 
-auto HaarTransform::buildEnergyMatrix(std::vector<arma::rowvec> const& energies) {
+auto HaarTransform::buildEnergyMatrix(std::vector<arma::rowvec> const& energies) const {
 
 	arma::mat energyMat(energies.size(), energies[0].n_cols);
 	int scaleLen(std::pow(2, int(std::log2(energyMat.n_cols)) + 1));
@@ -72,7 +72,7 @@ auto HaarTransform::buildEnergyMatrix(std::vector<arma::rowvec> const& energies)
 }
 
 // We pass a copy, since we have to copy the values anyway during padding
-auto HaarTransform::haarTransform(arma::mat traj) {
+auto HaarTransform::haarTransform(arma::mat traj) const {
 
 	// Zero-pad to the next power of two
 	std::size_t initSize(traj.n_cols);
@@ -108,7 +108,7 @@ auto HaarTransform::findVortices(
     arma::mat const& energies,
     std::vector<Vrtx>& vortices,
     int const id
-) {
+) const {
 
 	// Step through energies to find regions of sufficient density
 	int i(0);
