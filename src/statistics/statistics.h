@@ -8,9 +8,9 @@
 namespace vrtx {
 namespace statistics {
 
-void all(std::vector<Vrtx> const& vortices);
+void    all(db::nvfou512n3 const& db, std::vector<Vrtx> const& vortices);
+void volume(db::nvfou512n3 const& db, std::vector<Vrtx> const& vortices);
 void length(std::vector<Vrtx> const& vortices);
-void volume(std::vector<Vrtx> const& vortices);
 
 template<typename T>
 void evalDetectionAlgorithm(T const& alg);

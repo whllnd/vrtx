@@ -24,7 +24,7 @@ auto HaarTransform::zeroCross(arma::mat&& vortex) const {
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
 
 	// Smooth trajectory to get rid of ripples
-	axis = arma::conv(x, mHanningWindow, "same");
+	axis = arma::conv(axis, mHanningWindow, "same");
 
 	// Discretize axis into [-1,0,1]
 	axis /= arma::abs(axis).max();
@@ -151,8 +151,7 @@ auto HaarTransform::findVortices(
 				if (mMinLen / 2 <= r - l) {
 					int left(2*l), right(std::min(3124, 2*r));
 					Vrtx vortex{id, left, right-left, zeroCross(traj.submat(0, left, mDb.trajDim()-1, right))};
-					vortex.print("vortex:");
-					vortices.push_back(vortex);
+					vortices.push_back(std::move(vortex));
 				}
 			}
 			i = r;
@@ -173,7 +172,7 @@ std::vector<Vrtx> HaarTransform::detect(int minID, int maxID) {
 	std::vector<Vrtx> vortices;
 	for (int id(minID); id < maxID; id++) {
 
-		std::cout << "\rCurrent trajectory id: " << id << std::endl;
+		prettyPrint(minID, id, maxID);
 
 		// Get current trajectory from database
 		auto traj = mDb.trajectory(id, db::nvfou512n3::latAcc);
@@ -192,8 +191,16 @@ std::vector<Vrtx> HaarTransform::detect(int minID, int maxID) {
 		// Try to extract some vortex candidates
 		findVortices(traj, energies, vortices, id);
 	}
+	std::cout << std::endl;
 
 	return vortices;
+}
+
+void HaarTransform::prettyPrint(int minID, int id, int maxID) {
+	std::cout << "\rProgress: [";
+	int n = std::round(((id - minID * 1.) / (maxID - minID * 1.)) * 30);
+	std::cout << std::string(n, '=') << ">" << std::string(30-n-1, ' ') << "]";
+	std::cout.flush();
 }
 
 } // namespace detection

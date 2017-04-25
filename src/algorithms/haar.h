@@ -24,7 +24,7 @@ public:
 	, mSigma(sigma)
 	, mMinRev(revolutions)
 	, mGapWidth(gapWidth)
-	, mMinLin(minLen)
+	, mMinLen(minLen)
 	{}
 
 	std::vector<Vrtx> detect(int minID=0, int maxID=-1);
@@ -41,6 +41,7 @@ private:
 	) const;
 	auto zeroCross(arma::mat&& vortex) const;
 	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies) const;
+	void prettyPrint(int minID, int id, int maxID);
 
 	int static constexpr mScales = 5;
 	double const mSigma;

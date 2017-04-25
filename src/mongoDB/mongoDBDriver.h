@@ -31,8 +31,8 @@ public:
 	{
 		// Connect to database running on localhost:27017 and access db / collection
 		mClient = std::unique_ptr<mongocxx::client>(new mongocxx::client{mongocxx::uri{}});
-		mDB = (*mClient)[mDBName];
-		mColl = mDB[mCollName];
+		//mDB = (*mClient)[mDBName];
+		//mColl = mDB[mCollName];
 	}
 
 	~nvfou512n3() {}
@@ -43,10 +43,10 @@ public:
 	auto static constexpr latAcc   = "ap";
 
 	// Functions
-	auto trajectory(int id, std::string const& type=latAcc) -> arma::mat;
-	auto count() -> int;
+	auto trajectory(int id, std::string const& type=latAcc) const -> arma::mat;
+	auto count() const -> int;
 
-	void info();
+	void info() const;
 	static auto constexpr trajLen() -> int { return mTrajLen; } // Trajectory length in timesteps
 	static auto constexpr trajDim() -> int { return mDim; }
 
@@ -59,8 +59,8 @@ private:
 	std::string mCollName;
 
 	std::unique_ptr<mongocxx::client> mClient;
-	mongocxx::database mDB;
-	mongocxx::collection mColl;
+	//mongocxx::database mDB;
+	//mongocxx::collection mColl;
 };
 
 } // namespace db
