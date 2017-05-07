@@ -21,7 +21,7 @@ void volume(db::nvfou512n3 const& db, std::vector<Vrtx> const& vortices) {
 
 	arma::colvec volumes(vortices.size());
 	for (std::size_t v(0); v < vortices.size(); v++) {
-		auto vortex(db.trajectory(vortices[v].id, db::nvfou512n3::position));
+		auto vortex(db.trajectory(vortices[v].id, db::nvfou512n3::position).data);
 		double volume(0);
 		for (std::size_t i(0), e(9); i < vortex.n_cols; i += 10, e = std::min(std::size_t(vortex.n_cols-1), i+9)) {
 			auto const& sub(vortex.submat(0, i, 2, e));

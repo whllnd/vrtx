@@ -14,13 +14,13 @@ class HaarTransform : public DetectionAlgorithm {
 public:
 
 	HaarTransform(
-		db::nvfou512n3& db,
+		//db::nvfou512n3& db,
 		double sigma,
 		int revolutions,
 		int gapWidth=16,
 		int minLen=50
 	)
-	: DetectionAlgorithm(db)
+	: DetectionAlgorithm(/*db*/)
 	, mSigma(sigma)
 	, mMinRev(revolutions)
 	, mGapWidth(gapWidth)
@@ -28,20 +28,16 @@ public:
 	{}
 
 	std::vector<Vrtx> detect(int minID=0, int maxID=-1);
+	std::vector<Vrtx> detect(db::traj const& traj);
 
 private:
 
 	// trajectory of form MxN with M dimensions and N timesteps
 	auto haarTransform(arma::mat trajectory) const;
-	auto findVortices(
-		arma::mat const& traj,
-		arma::mat const& energies,
-		std::vector<Vrtx>& vortices,
-		int const pId
-	) const;
-	auto zeroCross(arma::mat&& vortex) const;
+	auto findVortices(db::traj const& traj, arma::mat const& energies) const;
+	auto zeroCross(arma::mat const& vortex) const;
 	auto buildEnergyMatrix(std::vector<arma::rowvec> const& energies) const;
-	void prettyPrint(int minID, int id, int maxID);
+	void printProgress(int minID, int id, int maxID);
 
 	int static constexpr mScales = 5;
 	double const mSigma;

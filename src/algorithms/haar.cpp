@@ -18,7 +18,7 @@ arma::colvec const HaarTransform::mHanningWindow{
 	 0.2, 0.1809017, 0.1309017, 0.0690983, 0.0190983,  0.
 };
 
-auto HaarTransform::zeroCross(arma::mat&& vortex) const {
+auto HaarTransform::zeroCross(arma::mat const& vortex) const {
 
 	// Pick axis of largest variance
 	arma::rowvec axis = vortex.row(arma::var(vortex, 1, 1).index_max());
@@ -103,15 +103,11 @@ auto HaarTransform::haarTransform(arma::mat traj) const {
 	return buildEnergyMatrix(energies);
 }
 
-auto HaarTransform::findVortices(
-    arma::mat const& traj,
-    arma::mat const& energies,
-    std::vector<Vrtx>& vortices,
-    int const id
-) const {
+auto HaarTransform::findVortices(db::traj const& traj, arma::mat const& energies) const {
 
 	// Step through energies to find regions of sufficient density
 	int i(0);
+    std::vector<Vrtx> vortices;
 	while (energies.n_cols > i) {
 		if (arma::any(1. <= energies.col(i))) {
 
@@ -150,7 +146,10 @@ auto HaarTransform::findVortices(
 				// Now, add vortex to list if vortex length satisfies minimum length
 				if (mMinLen / 2 <= r - l) {
 					int left(2*l), right(std::min(3124, 2*r));
-					Vrtx vortex{id, left, right-left, zeroCross(traj.submat(0, left, mDb.trajDim()-1, right))};
+					Vrtx vortex{
+						traj.id, left, right-left,
+						zeroCross(traj.data.submat(0, left, db::nvfou512n3::ndim-1, right))
+					};
 					vortices.push_back(std::move(vortex));
 				}
 			}
@@ -165,41 +164,62 @@ auto HaarTransform::findVortices(
 
 std::vector<Vrtx> HaarTransform::detect(int minID, int maxID) {
 
-	if (-1 == maxID) { // Perform detection over full set
-		maxID = mDb.count();
-	}
+	//std::cout << std::endl;
+	//if (-1 == maxID) { // Perform detection over full set
+	//	maxID = mDb.count();
+	//}
 
 	std::vector<Vrtx> vortices;
-	for (int id(minID); id < maxID; id++) {
+	//for (int id(minID); id < maxID; id++) {
 
-		prettyPrint(minID, id, maxID);
+	//	printProgress(minID, id, maxID);
 
-		// Get current trajectory from database
-		auto traj = mDb.trajectory(id, db::nvfou512n3::latAcc);
+	//	// Get current trajectory from database
+	//	auto traj = mDb.trajectory(id, db::nvfou512n3::latAcc);
 
-		// Compute median energies of detail coefficients, which by default come
-		// as an energy matrix instead of a somewhat pyramid-esque filter bank,
-		// i.e. return type is arma::mat for that matter
-		auto energies = haarTransform(traj);
-		//visualize::energies(energies);
+	//	// Compute median energies of detail coefficients, which by default come
+	//	// as an energy matrix instead of a somewhat pyramid-esque filter bank,
+	//	// i.e. return type is arma::mat for that matter
+	//	auto energies = haarTransform(traj);
+	//	//visualize::energies(energies);
 
-		// Normalize by sigma'ed standard deviations; TODO: Vectorized version
-		for (std::size_t i(0); i < mStandardDeviations.n_rows; i++) {
-			energies.row(i) /= mSigma * mStandardDeviations[i];
-		}
+	//	// Normalize by sigma'ed standard deviations; TODO: Vectorized version
+	//	for (std::size_t i(0); i < mStandardDeviations.n_rows; i++) {
+	//		energies.row(i) /= mSigma * mStandardDeviations[i];
+	//	}
 
-		// Try to extract some vortex candidates
-		findVortices(traj, energies, vortices, id);
-	}
-	std::cout << std::endl;
+	//	// Try to extract some vortex candidates
+	//	findVortices(traj, energies, vortices, id);
+	//}
+	//std::cout << std::endl;
 
 	return vortices;
 }
 
-void HaarTransform::prettyPrint(int minID, int id, int maxID) {
+std::vector<Vrtx> HaarTransform::detect(db::traj const& traj) {
+
+	// Compute median energies of detail coefficients, which by default come
+	// as an energy matrix instead of a somewhat pyramid-esque filter bank,
+	// i.e. return type is arma::mat for that matter
+	auto energies{haarTransform(traj.data)};
+
+	// Normalize by sigma'ed standard deviations
+	for (std::size_t i(0); i < mStandardDeviations.n_rows; i++) { // TODO: Vectorized version
+		energies.row(i) /= mSigma * mStandardDeviations[i];
+	}
+
+	// Try to extract some vortex candidates
+	auto vortices{findVortices(traj, energies)};
+
+	// TODO: Postprocess
+	return vortices;
+}
+
+void HaarTransform::printProgress(int minID, int id, int maxID) {
 	std::cout << "\rProgress: [";
 	int n = std::round(((id - minID * 1.) / (maxID - minID * 1.)) * 30);
-	std::cout << std::string(n, '=') << ">" << std::string(30-n-1, ' ') << "]";
+	std::cout << std::string(n, '=') << ">" << std::string(std::max(0, 30-n-1), ' ') <<
+		"| " << id << "/" << maxID << "]";
 	std::cout.flush();
 }
 
