@@ -22,17 +22,11 @@ struct Vrtx {
 	}
 };
 
-// Templated base function; eventually to be preferred
-//template<typename DetectionAlgorithm>
-//std::vector<Vrtx> detect(DetectionAlgorithm alg) {
-//	return alg.detect();
-//}
-
 // Base class for detection algorithms
 class DetectionAlgorithm {
 public:
-	DetectionAlgorithm(/*db::nvfou512n3& db) : mDb(db*/) {}
-	virtual std::vector<Vrtx> detect(int minID=0, int maxID=-1) = 0;
+	//DetectionAlgorithm(/*db::nvfou512n3& db) : mDb(db*/) {}
+	//virtual std::vector<Vrtx> detect(int minID=0, int maxID=-1) = 0;
 	virtual std::vector<Vrtx> detect(db::traj const& traj) = 0;
 	//db::nvfou512n3 const& db() {
 	//	return mDb;
