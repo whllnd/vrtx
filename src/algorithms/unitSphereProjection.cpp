@@ -56,11 +56,7 @@ void UnitSphereProjection::processNeighbors(arma::mat const& neighbors, int idx,
 
 	std::vector<int> crossings;
 	for (auto i(0); i < projection.n_rows-2; i++) {
-		arma::rowvec p1{projection.row(i)};
-		arma::rowvec p2{projection.row(i+1)};
 		for (auto j(i+1); j < projection.n_rows-1; j++) {
-			arma::rowvec q1{projection.row(j)};
-			arma::rowvec q2{projection.row(j+1)};
 			if (intersection(projection.row(i), projection.row(i+1), projection.row(j), projection.row(j+1))) {
 				crossings.push_back(i);
 				crossings.push_back(j);
